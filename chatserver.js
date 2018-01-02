@@ -1,6 +1,9 @@
-var express = require("express");
-var fs = require("fs");
-var app = express();
+const express = require("express");
+const fs = require("fs");
+const app = express();
+const server = require('http').Server(app);
+const io = require('socket.io')(server, {path: '/chatio'});
+
 var port = 3700;
 
 //var chathtml = fs.readFileSync("chat.html", "UTF-8").toString();
@@ -45,7 +48,7 @@ var userlist = {};
 
 
 
-var io = require('socket.io').listen(app.listen(port));
+server.listen(port);
 console.log("Listening on port " + port);
 
 

@@ -122,7 +122,9 @@ window.onload = function() {
 
     if(window.Notification && Notification.permission !== "denied") {
       if (msg == undefined){
-        Notification.requestPermission();
+        Notification.requestPermission(function (result) {
+          systemMessage("Permission " + result);
+        });
         return;
       }
 
@@ -212,7 +214,7 @@ window.onload = function() {
 
   var NOTIFYON = true;
   var userstatus = "active";
-  var socket = io('', {query:"room="+window.location.pathname.replace(/\/chat\//, '')});
+  var socket = io('', {path:'/chatio/socket.io', query:"room="+window.location.pathname.replace(/\/chat\//, '')});
   var content = document.getElementsByClassName("chatbox__messages__user-message")[0];
   var msgbox = document.getElementsByClassName("chatbox__msg-box")[0];
   var userlist = document.getElementsByClassName("chatbox__user-list")[0];
@@ -338,7 +340,13 @@ window.onload = function() {
     var text = urlify(input.innerHTML.replace(/&nbsp;/gi, ''));
     if (text!=""){
       // sendTime = new Date();
-      socket.emit('send', { message: text, username: user });
+      if (text === "!@#$%NOTIFY"){
+        Notification.requestPermission(function (result) {
+          systemMessage("Permission " + result);
+        });
+      } else {
+        socket.emit('send', { message: text, username: user });
+      }
       input.innerHTML = "";
       if (IFFOCUS) {input.focus();}
     }
