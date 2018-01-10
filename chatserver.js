@@ -51,7 +51,8 @@ var userlist = {};
 server.listen(port);
 console.log("Listening on port " + port);
 
-
+var keyfile = fs.readFileSync('key.json','utf8');
+var key = JSON.parse(keyfile).key;
 
 
 io.sockets.on('connection', function (socket) {
@@ -88,7 +89,7 @@ io.sockets.on('connection', function (socket) {
             data.message = 'Squid Proxy Restart';
             io.to(room).emit('message', data);
             console.log("Restart Proxy");
-            exec("echo 'whipqq17' | sudo -S -k service squid restart", (error, stdout, stderr) => {
+            exec("echo '"+key+"' | sudo -S -k service squid restart", (error, stdout, stderr) => {
               console.log(`stdout: ${stdout}`);
               console.log(`stderr: ${stderr}`);
               if (error !== null) {
