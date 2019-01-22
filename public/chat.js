@@ -406,7 +406,7 @@ window.onload = function() {
 
 
   sendMessage = function(IFFOCUS) {
-    var text = urlify(input.innerHTML.replace(/&nbsp;/gi, ''));
+    var text = urlify(input.innerHTML.replace(/&nbsp;/gi, '\u00a0'));
 
     if (text!=""){
       // sendTime = new Date();
@@ -423,11 +423,26 @@ window.onload = function() {
   };
 
 
-  input.onkeydown = function() {
+  input.onkeydown = function(event) {
     if(event.keyCode == 13) {
       sendMessage(true);
       return false;
     }
+
+    if (event.keyCode == 9) {
+      event.preventDefault();
+      var doc = input.ownerDocument.defaultView;
+      var sel = doc.getSelection();
+      var range = sel.getRangeAt(0);
+
+      var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0");
+      range.insertNode(tabNode);
+
+      range.setStartAfter(tabNode);
+      range.setEndAfter(tabNode); 
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } 
   }
 
   document.onkeyup=function(e){
