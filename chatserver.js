@@ -81,6 +81,7 @@ io.sockets.on('connection', function (socket) {
     socket.join(room);
     socket.emit('command', { command: 'connected' });
     socket.on('send', function (data) {
+        data.time = new Date();
         if (data.message.indexOf("!@#$%")==0){
           data.username = "#system";
           data.message = data.message.replace("!@#$%","");

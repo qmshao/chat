@@ -32,6 +32,12 @@ function urlify(text) {
   })
 }
 
+function resizeImage(text) {
+  var re = /(<img[^>]*)(\/?>)/;
+  return text.replace(re, '$1 style="max-width:250px;"$2');
+  
+}
+
 function getCanvasFp() {
   var d1 = new Date();
   var canvas = document.createElement("canvas");
@@ -103,6 +109,7 @@ window.onload = function() {
     if (message == "#RELOAD#"){
       systemMessage("Reloading");
       socket.disconnect();
+      window.name = "";
       location.reload();
       return;
     }
@@ -112,6 +119,8 @@ window.onload = function() {
     window.name = msghtml;
     msgbox.scrollTop = msgbox.scrollHeight;
   }
+
+
 
   var notificationset = new Set();
   function notify(msg) {
@@ -132,7 +141,7 @@ window.onload = function() {
       Notification.requestPermission(function(status) {
         var USERCLICK = true;
         var n = new Notification('New Message', {
-          body: msg,
+          body:  msg.replace(/(<img[^>]*)(\/?>)/, '[IMAGE RECIEVED]'),
           //requireInteraction: true,
           icon: 'Chrome-Push-Notifications-Browser.png' // optional
         });
@@ -224,6 +233,66 @@ window.onload = function() {
   var fp = getCanvasFp();
   // var sendTime;
 
+
+  window.onresize = function(){
+    msgbox.scrollTop = msgbox.scrollHeight;
+  }
+
+  
+ /* Handle paste events */
+ window.addEventListener("paste", function pasteHandler(e) {
+    // We need to check if event.clipboardData is supported (Chrome)
+    if (e.clipboardData) {
+       // Get the items from the clipboard
+       var items = e.clipboardData.items;
+       if (items) {
+          // Loop through all items, looking for any kind of image
+          // only loop once instead of items.length
+          for (var i = 0; i < 1; i++) {
+             if (items[i].type.indexOf("image") !== -1) {
+                // We need to represent the image as a file,
+                var blob = items[i].getAsFile();
+                // and use a URL or webkitURL (whichever is available to the browser)
+                // to create a temporary URL to the object
+                var URLObj = window.URL || window.webkitURL;
+                var source = URLObj.createObjectURL(blob);
+                 
+                // The URL can then be used as the source of an image
+                var reader = new FileReader();
+                reader.readAsDataURL(blob);
+                
+                reader.onload = function () { 
+                  input.innerHTML += `<img src="${reader.result}" style="max-width:250px;">`;
+                };
+                
+                
+             } else{
+                setTimeout(function(){
+                  resized = resizeImage(input.innerHTML);
+                  if (input.innerHTML != resized){
+                    input.innerHTML = resized;
+                  }
+                }, 0);
+             }
+          }
+       }
+    // If we can't handle clipboard data directly (Firefox), 
+    // we need to read what was pasted from the contenteditable element
+    } else {
+       // This is a cheap trick to make sure we read the data
+       // AFTER it has been inserted.
+       setTimeout(checkInput, 1);
+    }
+ });
+
+ window.addEventListener('copy', function(e){
+  e.clipboardData.setData('text/plain', window.getSelection().toString());  
+  e.preventDefault(); // We want to write our data to the clipboard, not data from any user selection
+
+});
+
+
+
   if (getCookie("colorful") === "N"){
     changeBackgroundColor();
   }
@@ -262,7 +331,7 @@ window.onload = function() {
       if (user != cookiename){
         setCookie("username", user, 365);
       }
-      title.innerHTML = "Welcome to AMayCom v2.0, " + user;
+      title.innerHTML = "Welcome to AMayCom v2.1, " + user;
       systemMessage("Connected to the server");
       msgbox.scrollTop = msgbox.scrollHeight;
       break;
@@ -284,18 +353,18 @@ window.onload = function() {
       // if (data.username == user){
       //   systemMessage("Lag: " + ((new Date())-sendTime));
       // }
-
+      time = (new Date(data.time)).toLocaleTimeString();
       if (lastmsgname != data.username){
         msghtml += (lastmsgname==""?"":"</div>")+ `
         <div class="chatbox__messages__user-message--ind-message chatbox__messages__${data.username==user?"right":"left"}">
         <p class="name">${data.username}</p>
         <br/>
-        <p class="message">${data.message}
+        <p class="message" title="${time}">${data.message}</p>
         `;
       } else {
         msghtml += `
         <br/>
-        ${data.message}
+        <p class="message" title="${time}">${data.message}</p>
         `;
       }
       lastmsgname = data.username;
@@ -305,7 +374,7 @@ window.onload = function() {
         notify(data.message);
       }
 
-      content.innerHTML = msghtml + '</p></div>';
+      content.innerHTML = msghtml + '</div>';
       window.name = msghtml;
       msgbox.scrollTop = msgbox.scrollHeight;
     } else {
@@ -338,6 +407,7 @@ window.onload = function() {
 
   sendMessage = function(IFFOCUS) {
     var text = urlify(input.innerHTML.replace(/&nbsp;/gi, ''));
+
     if (text!=""){
       // sendTime = new Date();
       if (text === "!@#$%NOTIFY"){
@@ -360,21 +430,30 @@ window.onload = function() {
     }
   }
 
+  document.onkeyup=function(e){
+    var e = e || window.event; // for IE to cover IEs window event-object
+    if(e.ctrlKey && e.which == 112) {
+      input.innerHTML = '!@#$%';
+      
+      var range = document.createRange();
+      var sel = window.getSelection();
+      var nNode = input.childNodes.length;
+      var lastNode = input.childNodes[nNode-1];
+      range.setStart(lastNode, lastNode.length);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      input.focus();
+
+      return false;
+    }
+  }
+
   // mobile specific code
   if (input.clientWidth == userlist.clientWidth){
     var container =  document.getElementsByClassName("container")[0];
     var msgboxOldHeight = msgbox.clientHeight;
 
-    function setEndOfContenteditable(contentEditableElement)
-    {
-      var range,selection;
-      range = document.createRange();//Create a range (a range is a like the selection but invisible)
-      range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
-      range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-      selection = window.getSelection();//get the selection object (allows you to change selection)
-      selection.removeAllRanges();//remove any selections already made
-      selection.addRange(range);//make the range you have just created the visible selection
-    }
 
     var USERSEND = true;
     var KEYBOARDON = false;
@@ -467,3 +546,5 @@ window.onload = function() {
   }
 
 }
+
+
