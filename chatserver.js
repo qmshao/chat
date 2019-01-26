@@ -10,6 +10,30 @@ var port = 3700;
 var filecache = {};
 const exec = require('child_process').exec;
 
+// const emoji = JSON.parse(fs.readFileSync('emoji.json', 'utf8'));
+// var emojicache = {};
+// for (var emo in emoji){
+//   emojicache[emo] = new Buffer(emoji[emo].split(",")[1], 'base64');
+// }
+
+
+// app.get("/chat/img/*", function(req, res){
+//   imgstr = req.path.substr(req.path.lastIndexOf('/') + 1);
+  
+//   if (imgstr in emojicache){
+//     res.end(emojicache[imgstr]); 
+//     res.writeHead(200, {
+//       'Content-Type': 'image/png',
+//       'Content-Length': emojicache[imgstr].length
+//     });
+//   } else{
+//     res.send("ERROR");
+//   }
+// });
+
+app.use("/chat/img",express.static('img'));
+
+
 app.get("/chat/*", function(req, res){
   //console.log(req.query.room);
   var path = req.path.slice(6);

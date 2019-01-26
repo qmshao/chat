@@ -32,11 +32,6 @@ function urlify(text) {
   })
 }
 
-function resizeImage(text) {
-  var re = /(<img[^>]*)(\/?>)/;
-  return text.replace(re, '$1 style="max-width:250px;"$2');
-  
-}
 
 function getCanvasFp() {
   var d1 = new Date();
@@ -238,17 +233,74 @@ window.onload = function() {
     msgbox.scrollTop = msgbox.scrollHeight;
   }
 
+  // Modal 
+  this.modalImg = document.getElementById("img01");
+  this.modal = document.getElementById('myModal');
+  this.modalfcn = function(obj){
+    modal.style.display = "block";
+    modalImg.src = obj.src;
+    modalImg.style["max-height"] = "90%";
+    modalImg.style["max-width"] = "90%";
+    modalImg.style.height = "auto";
+    modalImg.style.width = "auto";
+    slope = modalImg.height / modalImg.width;
+  }
+
+  modal.onwheel = function(e) {
+    e.preventDefault();
+    xoffset = modalImg.width>window.innerWidth? modal.scrollLeft : (modalImg.width - window.innerWidth)/2;
+    yoffset = modalImg.height>window.innerHeight? modal.scrollTop: (modalImg.height - window.innerHeight)/2;;
+
+    var h = modalImg.height;
+    var change_h = h - e.deltaY;
+    change_h = Math.min(change_h,3000);
+    var change_w = change_h/slope;
+
+    if (change_w>4000){
+      change_w = 4000;
+      change_h = change_w*slope;
+    }
+
+    modalImg.style["max-height"] = "3000px";
+    modalImg.style["max-width"] = "4000px";
+    modalImg.style.height = change_h.toString() + "px";
+    modalImg.style.width = change_w.toString() + "px";
+
+    xoffset = (xoffset + window.innerWidth/2)*change_h/h - window.innerWidth/2;
+    yoffset = (yoffset + window.innerHeight/2)*change_h/h - window.innerHeight/2;
+    
+    modal.scrollTo(xoffset,yoffset);
+
+}
+
+  // When the user clicks on <span> (x), close the modal
+  var span = document.getElementsByClassName("close")[0];
+  span.onclick = function() { 
+    modal.style.display = "none";
+  }
+
+  modal.onclick = function(){
+    //if (modal.style.display=="block"){
+    if (!moveFlag) {
+      modal.style.display = "none";
+    }
+      
+    //}
+  }
+
   
  /* Handle paste events */
  window.addEventListener("paste", function pasteHandler(e) {
     // We need to check if event.clipboardData is supported (Chrome)
+    //e.preventDefault();
     if (e.clipboardData) {
        // Get the items from the clipboard
        var items = e.clipboardData.items;
        if (items) {
+          var prev = "";
           // Loop through all items, looking for any kind of image
-          // only loop once instead of items.length
-          for (var i = 0; i < 1; i++) {
+          for (var i = 0; i < items.length; i++) {
+            
              if (items[i].type.indexOf("image") !== -1) {
                 // We need to represent the image as a file,
                 var blob = items[i].getAsFile();
@@ -262,17 +314,36 @@ window.onload = function() {
                 reader.readAsDataURL(blob);
                 
                 reader.onload = function () { 
-                  input.innerHTML += `<img src="${reader.result}" style="max-width:250px;">`;
+                  if (!prev){
+                    input.innerHTML += `<img src="${reader.result}"  onclick="modalfcn(this)">`;
+                  } else if (prev == "file"){
+                    //input.innerHTML = input.innerHTML.replace(/<img[^>]*("file:\/\/[^>^"]*")\/?>/, 
+                    input.innerHTML = input.innerHTML.replace(/<img[^>]*("file:\/\/((?!(modalfcn|>)).)*")\/?>/, 
+                      `<img src="${reader.result}" onclick="modalfcn(this)">`);
+                  }
+                  moveToEnd();
                 };
-                
+                prev = "";
                 
              } else{
-                setTimeout(function(){
-                  resized = resizeImage(input.innerHTML);
-                  if (input.innerHTML != resized){
-                    input.innerHTML = resized;
-                  }
-                }, 0);
+              items[i].getAsString(str => {
+                //var re = /(<img[^>]*)(\/?>)/;
+                var reimg = /(<img((?!(modalfcn|>)).)*)(\/?>)/;
+                var redivL = /<div/g;
+                var redivR = /div>/g;
+                if (str.indexOf('file:\/\/')==-1){
+                    prev =  str;
+                    setTimeout(function(){
+                      input.innerHTML = input.innerHTML.replace(reimg, '$1 onclick="modalfcn(this)"$4')
+                                                       .replace(redivL, '<span').replace(redivR, 'span><br>');
+
+                      moveToEnd();
+                    },0);
+                        
+                } else {
+                  prev = "file";
+                }
+              });
              }
           }
        }
@@ -422,6 +493,17 @@ window.onload = function() {
     }
   };
 
+  moveToEnd = function(){      
+    var range = document.createRange();
+    var sel = window.getSelection();
+    var nNode = input.childNodes.length;
+    range.setStart(input, nNode);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    input.focus();
+  }
+
 
   input.onkeydown = function(event) {
     if(event.keyCode == 13) {
@@ -434,10 +516,10 @@ window.onload = function() {
       var doc = input.ownerDocument.defaultView;
       var sel = doc.getSelection();
       var range = sel.getRangeAt(0);
-
+  
       var tabNode = document.createTextNode("\u00a0\u00a0\u00a0\u00a0");
       range.insertNode(tabNode);
-
+  
       range.setStartAfter(tabNode);
       range.setEndAfter(tabNode); 
       sel.removeAllRanges();
@@ -445,22 +527,27 @@ window.onload = function() {
     } 
   }
 
+  // var prevInput = ["",""];
+  // input.oninput = function(){
+  //   prevInput[0] = prevInput[1];
+  //   prevInput[1] = input.innerHTML;
+  // }
+
   document.onkeyup=function(e){
     var e = e || window.event; // for IE to cover IEs window event-object
-    if(e.ctrlKey && e.which == 112) {
+    if(e.altKey && e.which == 112) {
       input.innerHTML = '!@#$%';
-      
-      var range = document.createRange();
-      var sel = window.getSelection();
-      var nNode = input.childNodes.length;
-      var lastNode = input.childNodes[nNode-1];
-      range.setStart(lastNode, lastNode.length);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
-      input.focus();
-
+      moveToEnd();
       return false;
+    }
+    if(e.altKey && e.which >=49 && e.which <=57) {
+      e.preventDefault();
+      input.innerHTML += `<img src="img/emoji${String.fromCharCode(e.which)}.png" style="max-width:250px;" onclick="modalfcn(this)">`
+      moveToEnd();
+      return false;
+    }
+    if(e.ctrlKey && e.which == 90){
+
     }
   }
 
@@ -557,7 +644,7 @@ window.onload = function() {
       userstatus = "active";
       socket.emit('updateuser', {username:user, status:userstatus,fingerprint:fp});
     }
-    t = setTimeout(setIdle, 300000);  // time is in milliseconds
+    t = setTimeout(setIdle, 300000);  // time is in milliseconds  
   }
 
 }

@@ -1,15 +1,17 @@
-{
+/*{
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: 'Nunito', sans-serif;
-}
+}*/
 
 body {
   background: -webkit-linear-gradient(330deg, #17bebb, #f0a6ca);
-  //background: linear-gradient(120deg, #17bebb, #f0a6ca);
-	//background-color: rgba(0, 0, 0, 0.5);
   overflow: hidden;
+}
+
+img {
+  max-width: 250px;
 }
 
 .container {
@@ -36,19 +38,16 @@ body {
 }
 
 .system {
-  //background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.8em;
   margin: 0;
   font-weight: 450;
   text-align: center;
 
-  align: center;
-  //padding: 0.5em 0;
+  /*align: center;*/
   height: auto;
   width: 100%;
   border-radius: 5px;
-  //margin: 0.5em 0.5em;
   overflow: auto;
 }
 
@@ -71,15 +70,12 @@ body {
   border-bottom-right-radius: 0.2em;
 
   overflow: hidden;
-  //visibility: hidden;
 }
 
 
 
 .chatbox__msg-box::-webkit-scrollbar-track
 {
-	//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-	//background-color: rgba(255, 255, 255, 0.05);
 	border-radius: 10px;
 	background-color:transparent;
 }
@@ -87,7 +83,6 @@ body {
 .chatbox__msg-box::-webkit-scrollbar
 {
 	width: 10px;
-	//background-color: rgba(255, 255, 255, 0.05);
 	background-color:transparent;
 }
 
@@ -96,13 +91,7 @@ body {
 {
 	border-radius: 10px;
 	background-color: rgba(255, 255, 255, 0.25);
-	//background-image: -webkit-linear-gradient(330deg, #17bebb, #f0a6ca);
-				//-webkit-gradient(linear,
-				//					   left bottom,
-				//					   left top,
-				//					   color-stop(0.44, rgb(122,153,217)),
-				//					   color-stop(0.72, rgb(73,125,189)),
-									   color-stop(0.86, rgb(28,58,148)));
+									  /* color-stop(0.86, rgb(28,58,148)));*/
 }
 
 .chatbox__msg-box:hover,
@@ -159,7 +148,7 @@ body {
   margin: 0 0.833em;
   font-weight: 600;
 }
-.chatbox__messages__user-message--ind-message > p.message {
+.chatbox__messages__user-message--ind-message > .message {
   color: #FFF;
   font-size: 0.9em;
   margin: 0 1em;
@@ -237,7 +226,6 @@ body {
 
   float: left;
   text-align: left;
-  //margin: -0.25em 2em;
   font-size: 0.9em;
   color: #FFF;
 }
@@ -255,4 +243,72 @@ body {
 
 :-ms-input-placeholder {
   color: rgba(255, 255, 255, 0.9);
+}
+
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: auto; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (Image) */
+.modal-content {
+  margin: 0 auto;
+  display: block;
+  max-width: 90%;
+  max-height: 90%;
+  cursor: pointer;
+
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+
+/* Add Animation - Zoom in the Modal */
+.modal-content { 
+  animation-name: zoom;
+}
+
+@keyframes zoom {
+  from {transform:scale(0)} 
+  to {transform:scale(1)}
+}
+
+/* The Close Button */
+.close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* 100% Image Width on Smaller Screens */
+@media only screen and (max-width: 700px){
+  .modal-content {
+    max-width: 100%;
+  }
 }

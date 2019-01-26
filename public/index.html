@@ -9,6 +9,7 @@
   <link rel="stylesheet" type="text/css" media="only screen and (max-device-width: 480px)" href="chat-mobile.css" />
   <script src="/public/socket.io.js"></script>
   <script src="chat.js"></script>
+  <script src="dragscroll.js"></script>
 </head>
 
 <body>
@@ -32,6 +33,19 @@
         <input id="input"  placeholder="Enter your message">
       </div-->
     </div>
+
+  <!-- The Modal -->
+  <div id="myModal" class="modal  dragscroll">
+    
+      <!-- The Close Button -->
+      <span class="close">&times;</span>
+    
+      <!-- Modal Content (The Image) -->
+      <img class="modal-content" id="img01">
+    
+    </div>
+
+
   </div>
 
   </body>

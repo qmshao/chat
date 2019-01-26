@@ -164,7 +164,7 @@ body, html {
   margin: 0 0.833em;
   font-weight: 600;
 }
-.chatbox__messages__user-message--ind-message > p.message {
+.chatbox__messages__user-message--ind-message > .message {
   color: #FFF;
   font-size: 0.9em;
   margin: 0 1em;
